@@ -45,7 +45,7 @@ const weatherCases={
         colors: ["#89F7FE", "#66A6FF"],
         title: "Haze",
         subtitle: "Don't know what that is 💩",
-        icon: "weather-hail"
+        icon: "weather-cloudy"
     },
     Mist: {
         colors: ["#D7D2CC", "#304352"],
