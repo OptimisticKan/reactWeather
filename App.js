@@ -1,42 +1,76 @@
-import React , {Component} from 'react';
-import {StyleSheet, Text, View, Image, ActivytyIndicator} from 'react-native';
-import Weather from './components/Weather';
+import React, {Component} from "react";
+import {StyleSheet,Text,View,StatusBar} from "react-native";
+import Weather from "./components/Weather";
 
-class App extends Component {
+const API_KEY = "566758fdfefa4f7755240c7c1f060b10";
+
+export default class App extends Component {
   state = {
-    isLoaded:false
+    isLoaded: false,
+    error: null,
+    temperature: null,
+    name: null
   };
-
-  render(){
-    const {isLoaded } = this.state;
-    return(
-      <View style={Styles.container}>
-        {isLoaded ? null :(
-          <Weather />
-          )}
-      </View>
-    )
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this._getWeather(position.coords.latitude, position.coords.longitude);
+      },
+      error => {
+        this.setState({
+          error: error
+        });
+      }
+    );
   }
-} 
+  _getWeather = (lat, long) => {
+    fetch(
+      //literal 은 ''가 아니고 ``임!
+        `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&APPID=${API_KEY}`
+      )
+      .then(response => response.json())
+      .then(json => {
+        this.setState({
+          temperature: json.main.temp,
+          name: json.weather[0].main,
+          isLoaded: true
+        });
+      });
+  };
+  render() {
+    const {isLoaded,error,temperature} = this.state;
+    return ( 
+    <View style = { styles.container}>
+      <StatusBar hidden = {true}/> 
+          {isLoaded ? ( <Weather weatherName = {"Rain"} temperature = {Math.ceil(temperature - 273.15)}/>) : ( 
+          <View style = { styles.loading} >
+          <Text style = {styles.loadingText} >Now Loading... </Text> 
+          {error ? < Text style = {styles.errorText} > {error} </Text> : null} 
+          </View>)
+          } 
+          </View>
+      );
+    }
+  }
 
-const Styles = StyleSheet.create({
-  container: {
-    flex:1,
-    backgroundColor:"#fff"
-  },
-
-  loading: {
-    flex:1,
-    backgroundColor:"pink",
-    justifyContent:"flex-end",
-    paddingLeft:100
-  },
-
-  loadingText: {
-    fontSize:38,
-    marginBottom:100
-  },
-
-})
-export default App;
-
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#fff"
+    },
+    errorText: {
+      color: "red",
+      backgroundColor: "transparent",
+      marginBottom: 40
+    },
+    loading: {
+      flex: 1,
+      backgroundColor: "#FDF6AA",
+      justifyContent: "flex-end",
+      paddingLeft: 25
+    },
+    loadingText: {
+      fontSize: 38,
+      marginBottom: 24
+    }
+  });
